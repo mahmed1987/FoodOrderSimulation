@@ -24,7 +24,8 @@ class OrdersViewModel @Inject constructor() : ViewModel() {
 
   val orderState: StateFlow<OrderUiState> =
     combine(ordersQueue, mutableOrder) { orders, mutableOrder ->
-      OrderUiState.Loading
+      orders.add(mutableOrder)
+      OrderUiState.Success(orders)
     }.stateIn(
       scope = viewModelScope,
       started = SharingStarted.WhileSubscribed(5_000),
