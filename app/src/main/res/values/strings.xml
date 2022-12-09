@@ -1,3 +1,7 @@
 <resources>
     <string name="app_name">FoodOrderSimulation</string>
+    <string name="order_status_new">New</string>
+    <string name="order_status_preparation">Preparation</string>
+    <string name="order_status_ready">Ready</string>
+    <string name="order_status_delivered">Delivered</string>
 </resources>

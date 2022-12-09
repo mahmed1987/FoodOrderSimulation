@@ -5,10 +5,23 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.style.TextOverflow
 
 @Composable
-fun AppText(fontSize: FontSize = FontSize.Medium, fontFamily: FontFamily = FontFamily.Body, text: String, color: Color = Color.Unspecified) {
-  Text(style = getFontStyle(fontSize = fontSize, fontFamily = fontFamily), text = text, color = color)
+fun AppText(
+  fontSize: FontSize = FontSize.Medium,
+  fontFamily: FontFamily = FontFamily.Body,
+  text: String,
+  color: Color = Color.Unspecified,
+  maxLines: Int = Int.MAX_VALUE
+) {
+  Text(
+    style = getFontStyle(fontSize = fontSize, fontFamily = fontFamily),
+    text = text,
+    color = color,
+    maxLines = maxLines,
+    overflow = TextOverflow.Ellipsis
+  )
 }
 
 enum class FontSize {
@@ -58,35 +71,48 @@ enum class FontFamily {
 fun LargeHeading(text: String, color: Color = Color.Unspecified) {
   AppText(fontSize = FontSize.Large, fontFamily = FontFamily.Headline, text = text, color = color)
 }
+
 @Composable
 fun MediumHeading(text: String, color: Color = Color.Unspecified) {
   AppText(fontSize = FontSize.Medium, fontFamily = FontFamily.Headline, text = text, color = color)
 }
+
 @Composable
 fun SmallHeading(text: String, color: Color = Color.Unspecified) {
   AppText(fontSize = FontSize.Small, fontFamily = FontFamily.Headline, text = text, color = color)
 }
+
 @Composable
 fun LargeTitle(text: String, color: Color = Color.Unspecified) {
   AppText(fontSize = FontSize.Large, fontFamily = FontFamily.Title, text = text, color = color)
 }
+
 @Composable
 fun MediumTitle(text: String, color: Color = Color.Unspecified) {
   AppText(fontSize = FontSize.Medium, fontFamily = FontFamily.Title, text = text, color = color)
 }
+
 @Composable
-fun SmallTitle(text: String, color: Color = Color.Unspecified) {
-  AppText(fontSize = FontSize.Small, fontFamily = FontFamily.Title, text = text, color = color)
+fun SmallTitle(text: String, color: Color = Color.Unspecified, maxLines: Int = Int.MAX_VALUE) {
+  AppText(
+    fontSize = FontSize.Small,
+    fontFamily = FontFamily.Title,
+    text = text,
+    color = color,
+    maxLines = maxLines
+  )
 }
 
 @Composable
 fun LargeBody(text: String, color: Color = Color.Unspecified) {
   AppText(fontSize = FontSize.Large, fontFamily = FontFamily.Body, text = text, color = color)
 }
+
 @Composable
 fun MediumBody(text: String, color: Color = Color.Unspecified) {
   AppText(fontSize = FontSize.Medium, fontFamily = FontFamily.Body, text = text, color = color)
 }
+
 @Composable
 fun SmallBody(text: String, color: Color = Color.Unspecified) {
   AppText(fontSize = FontSize.Small, fontFamily = FontFamily.Body, text = text, color = color)

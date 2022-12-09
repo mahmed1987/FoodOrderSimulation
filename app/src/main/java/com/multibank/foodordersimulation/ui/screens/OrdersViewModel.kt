@@ -8,7 +8,9 @@ import com.multibank.foodordersimulation.data.models.Order
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import java.time.LocalDateTime
 import java.util.Queue
+import java.util.UUID
 import javax.inject.Inject
 
 @HiltViewModel
@@ -25,16 +27,16 @@ class OrdersViewModel @Inject constructor() : ViewModel() {
   val orderState: StateFlow<OrderUiState> =
     combine(ordersQueue, mutableOrder) { orders, mutableOrder ->
       orders.add(mutableOrder)
-      OrderUiState.Success(orders)
+      OrderUiState.Success(ArrayList(orders))
     }.stateIn(
       scope = viewModelScope,
       started = SharingStarted.WhileSubscribed(5_000),
       initialValue = OrderUiState.Loading
     )
 
-  fun addOrderToQueue(order: Order) {
+  fun addOrderToQueue() {
     viewModelScope.launch {
-      mutableOrder.emit(order)
+      mutableOrder.emit(Order(UUID.randomUUID().toString(), Order.Status.New, LocalDateTime.now()))
     }
   }
 
