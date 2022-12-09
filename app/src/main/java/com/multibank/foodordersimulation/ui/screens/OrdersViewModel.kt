@@ -26,7 +26,8 @@ class OrdersViewModel @Inject constructor() : ViewModel() {
 
   val orderState: StateFlow<OrderUiState> =
     combine(ordersQueue, mutableOrder) { orders, mutableOrder ->
-      orders.add(mutableOrder)
+      if (mutableOrder.id != "-1")
+        orders.add(mutableOrder)
       OrderUiState.Success(ArrayList(orders))
     }.stateIn(
       scope = viewModelScope,
