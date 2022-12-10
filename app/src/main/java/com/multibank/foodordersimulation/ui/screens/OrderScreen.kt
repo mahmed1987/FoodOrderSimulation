@@ -5,7 +5,9 @@ import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -19,7 +21,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.multibank.foodordersimulation.data.models.Order
 import com.multibank.foodordersimulation.ui.styles.*
 import com.multibank.foodordersimulation.ui.theme.FoodOrderSimulationTheme
-import com.multibank.foodordersimulation.ui.theme.mediumPadding
 import com.multibank.foodordersimulation.ui.theme.smallPadding
 
 @OptIn(ExperimentalLifecycleComposeApi::class)
@@ -30,13 +31,15 @@ fun OrderScreen(
   navigateToOrderDetails: (Order) -> Unit
 ) {
   val orderUiState: OrderUiState by viewModel.orderState.collectAsStateWithLifecycle()
+  val listState = rememberLazyListState()
   Window {
     OrderScreenContent(
-      paddingValues,
-      orderUiState,
-      viewModel::advanceOrderStatus,
-      viewModel::addOrderToQueue,
-      navigateToOrderDetails
+      listState = listState,
+      paddingValues = paddingValues,
+      orderUiState = orderUiState,
+      onOrderStatusClicked = viewModel::advanceOrderStatus,
+      addOrder = viewModel::addOrderToQueue,
+      navigateToOrderDetails = navigateToOrderDetails
     )
   }
 }
@@ -47,21 +50,27 @@ fun OrderScreenContent(
   orderUiState: OrderUiState,
   onOrderStatusClicked: (Order) -> Unit,
   addOrder: () -> Unit,
-  navigateToOrderDetails: (Order) -> Unit
+  navigateToOrderDetails: (Order) -> Unit,
+  listState: LazyListState
 ) {
+
   Crossfade(targetState = orderUiState) { uiState ->
     when (uiState) {
       OrderUiState.Error -> TODO()
       OrderUiState.Loading -> CircularProgressIndicator()
       is OrderUiState.OrderStatusChanged -> TODO()
       is OrderUiState.Success -> {
-        Column(Modifier.padding(paddingValues)) {
+        Column(
+          Modifier
+            .padding(paddingValues)
+        ) {
           LargeSpacer()
           AppButton(text = "Place Order") {
             addOrder()
           }
           LargeSpacer()
           OrderItems(
+            listState = listState,
             orders = uiState.orders,
             onOrderStatusClicked = onOrderStatusClicked,
             onOrderClicked = navigateToOrderDetails
@@ -77,9 +86,10 @@ fun OrderScreenContent(
 fun OrderItems(
   orders: List<Order>,
   onOrderStatusClicked: (Order) -> Unit,
-  onOrderClicked: (Order) -> Unit
+  onOrderClicked: (Order) -> Unit,
+  listState: LazyListState
 ) {
-  LazyColumn {
+  LazyColumn(state = listState) {
     items(orders) {
       OrderItem(
         order = it,
@@ -110,7 +120,11 @@ fun OrderItem(
         SmallTitle(text = order.id, maxLines = 1)
       }
       MediumSpacer()
-      Row(horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
+      Row(
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier.fillMaxWidth()
+      ) {
         AppCard(
           type = CardType.Tertiary,
           modifier = Modifier.clickable(order.status != Order.Status.Delivered) {
@@ -143,6 +157,13 @@ fun PreviewOrderItem() {
 @Composable
 fun PreviewFoodOrderingScreen() {
   FoodOrderSimulationTheme {
-    OrderScreenContent(smallPadding, OrderUiState.Success(listOf(Order.empty())), {}, {}) {}
+    OrderScreenContent(
+      paddingValues = smallPadding,
+      orderUiState = OrderUiState.Success(listOf(Order.empty())),
+      onOrderStatusClicked = {},
+      addOrder = {},
+      {},
+      listState = rememberLazyListState()
+    )
   }
 }

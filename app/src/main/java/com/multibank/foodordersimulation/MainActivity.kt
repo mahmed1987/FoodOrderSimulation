@@ -58,7 +58,9 @@ class MainActivity : ComponentActivity() {
               val orderId = backStackEntry.arguments?.getString("orderId")
               orderId?.let {
                 val order = viewModel.orderById(orderId)
-                OrderDetailsScreen(padding, order.second)
+                order?.let {
+                  OrderDetailsScreen(padding, order.second)
+                }
               }
             }
             /*...*/

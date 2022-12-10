@@ -48,7 +48,7 @@ class OrdersViewModel @Inject constructor() : ViewModel() {
       OrderUiState.Success(reduce(orders, intention))
     }.stateIn(
       scope = viewModelScope,
-      started = SharingStarted.WhileSubscribed(5_000),
+      started = SharingStarted.Eagerly,
       initialValue = OrderUiState.Loading
     )
 
@@ -60,16 +60,20 @@ class OrdersViewModel @Inject constructor() : ViewModel() {
       is OrderIntention.AddOrderToQueue -> currentOrders.add(event.order)
       is OrderIntention.AdvanceStatus -> {
         val order = currentOrders.findOrderById(event.order.id)
-        val newStatus = advanceStatus(order.second.status)
-        currentOrders[order.first] = order.second.copy(status = newStatus)
-        if (newStatus == Order.Status.Delivered) {
-          startTimerForOrder(currentOrders[order.first])
+        order?.let {
+          val newStatus = advanceStatus(order.second.status)
+          currentOrders[order.first] = order.second.copy(status = newStatus)
+          if (newStatus == Order.Status.Delivered) {
+            startTimerForOrder(currentOrders[order.first])
+          }
         }
       }
       OrderIntention.InitializeScreen -> emptyList<Order>()
       is OrderIntention.RemovedDeliveredOrder -> {
         val order = currentOrders.findOrderById(event.order.id)
-        currentOrders.removeAt(order.first)
+        order?.let {
+          currentOrders.removeAt(order.first)
+        }
       }
     }
     return ArrayList(currentOrders)
@@ -90,10 +94,12 @@ class OrdersViewModel @Inject constructor() : ViewModel() {
   }
 
 
-  private fun List<Order>.findOrderById(id: String): Pair<Int, Order> {
-    val order = first { it.id == id }
-    val indexOfOrder = indexOf(order)
-    return indexOfOrder to order
+  private fun List<Order>.findOrderById(id: String): Pair<Int, Order>? {
+    val order = firstOrNull { it.id == id }
+    return order?.let {
+      val indexOfOrder = indexOf(order)
+      indexOfOrder to order
+    } ?: kotlin.run { null }
   }
 
   private fun List<Order>.findDeliveredOrders() = filter { it.status == Order.Status.Delivered }
