@@ -16,19 +16,28 @@ import javax.inject.Inject
 @HiltViewModel
 class OrdersViewModel @Inject constructor() : ViewModel() {
 
-  //orders queue
+  /* The backing queue of orders that drives the UI for orders - In reality this should be persisted in Room*/
   private val ordersQueue: MutableStateFlow<ArrayDeque<Order>> = MutableStateFlow(ArrayDeque())
+
+  /* The intention that would mutate the state of the UI*/
   private val event: MutableStateFlow<OrderIntention> =
     MutableStateFlow(OrderIntention.InitializeScreen)
 
+  /* A property that would host all the timers that are present in the system , so that they can be cleared in onCleared*/
   private val deliveredOrderTimers: MutableList<CountDownTimer> = mutableListOf()
 
+  /* State of the UI*/
+  val orderState: StateFlow<OrderUiState> =
+    combine(ordersQueue, event) { orders, intention ->
+      OrderUiState.Success(reduce(orders, intention))
+    }.stateIn(
+      scope = viewModelScope,
+      started = SharingStarted.Eagerly,
+      initialValue = OrderUiState.Loading
+    )
 
-  override fun onCleared() {
-    super.onCleared()
-    deliveredOrderTimers.forEach { it.cancel() }
-  }
 
+  //region Public interfaces to the ViewModel
   fun advanceOrderStatus(order: Order) {
     executeIntention(OrderIntention.AdvanceStatus(order))
   }
@@ -38,19 +47,8 @@ class OrdersViewModel @Inject constructor() : ViewModel() {
   }
 
   fun orderById(id: String) = ordersQueue.value.findOrderById(id)
+  //endregion
 
-  private fun removeDeliveredOrder(order: Order) {
-    executeIntention(OrderIntention.RemovedDeliveredOrder(order))
-  }
-
-  val orderState: StateFlow<OrderUiState> =
-    combine(ordersQueue, event) { orders, intention ->
-      OrderUiState.Success(reduce(orders, intention))
-    }.stateIn(
-      scope = viewModelScope,
-      started = SharingStarted.Eagerly,
-      initialValue = OrderUiState.Loading
-    )
 
   /**
    * Takes in the current orders , performs the intention on it , then returns a new list
@@ -79,6 +77,9 @@ class OrdersViewModel @Inject constructor() : ViewModel() {
     return ArrayList(currentOrders)
   }
 
+  /**
+   * When an order moves into the Delivered State , this function below starts the 15 seconds timer for it
+   * */
   private fun startTimerForOrder(order: Order) {
     object : CountDownTimer(15000, 15000) {
 
@@ -102,12 +103,16 @@ class OrdersViewModel @Inject constructor() : ViewModel() {
     } ?: kotlin.run { null }
   }
 
-  private fun List<Order>.findDeliveredOrders() = filter { it.status == Order.Status.Delivered }
-
+  /**
+   * Mutates the State of the UI , by executing this intention against the state
+   * */
   private fun executeIntention(intention: OrderIntention) {
     event.value = intention
   }
 
+  /**
+   * Advances the stage of the Order , for example from New to Preparation
+   * */
   private fun advanceStatus(status: Order.Status) = when (status) {
     Order.Status.New -> Order.Status.Preparing
     Order.Status.Preparing -> Order.Status.Ready
@@ -115,7 +120,17 @@ class OrdersViewModel @Inject constructor() : ViewModel() {
     Order.Status.Delivered -> Order.Status.Delivered
   }
 
+  /**
+   * After 15 seconds have elapsed , this function below mutate the State via Intention
+   * */
+  private fun removeDeliveredOrder(order: Order) {
+    executeIntention(OrderIntention.RemovedDeliveredOrder(order))
+  }
 
+  override fun onCleared() {
+    super.onCleared()
+    deliveredOrderTimers.forEach { it.cancel() }
+  }
 }
 
 /**The intentions that would mutate the state of the screen */

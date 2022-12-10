@@ -23,13 +23,20 @@ and [`OrderDetailsScreen.kt`][OrderDetailsUi]
 
 ###### Intentions
 
-The follow intentions mutate the state of the view
+The follow intentions mutate the state of the view represented by [`OrderIntention`][OrderUiState]
 
 - AddOrderToQueue (Adds the order to the order queue)
 - AdvanceStatus (Advances the status of the order ,for example from New -> Preparing)
 - RemovedDeliveredOrder (Removes the order from the queue after 15 seconds have elapsed)
 
+## How are intentions turned into State?
+
+The convention is to use a function called "reduce", that takes an old state , and the new intention
+, and mutates the state. Take a look at the reduce function in the ['OrdersViewModel][OrderVm]
+
 [OrderUiState]: app/src/main/java/com/multibank/foodordersimulation/ui/screens/OrdersViewModel.kt
+
+[OrderVm]: app/src/main/java/com/multibank/foodordersimulation/ui/screens/OrdersViewModel.kt
 
 [OrdersUi]: app/src/main/java/com/multibank/foodordersimulation/ui/screens/OrderScreen.kt
 
