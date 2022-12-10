@@ -118,6 +118,7 @@ class OrdersViewModel @Inject constructor() : ViewModel() {
 
 }
 
+/**The intentions that would mutate the state of the screen */
 sealed interface OrderIntention {
   object InitializeScreen : OrderIntention
   data class AddOrderToQueue(val order: Order) : OrderIntention
@@ -125,6 +126,7 @@ sealed interface OrderIntention {
   data class RemovedDeliveredOrder(val order: Order) : OrderIntention
 }
 
+/**The model for the screen*/
 @Immutable
 sealed interface OrderUiState {
   data class Success(val orders: List<Order>) : OrderUiState
