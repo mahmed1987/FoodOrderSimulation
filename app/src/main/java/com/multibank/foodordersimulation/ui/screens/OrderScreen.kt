@@ -112,8 +112,7 @@ fun OrderItem(
       MediumSpacer()
       Row(horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
         AppCard(
-          type = CardType.Secondary,
-          contentPadding = mediumPadding,
+          type = CardType.Tertiary,
           modifier = Modifier.clickable(order.status != Order.Status.Delivered) {
             onOrderStatusClicked(order)
           }) {
