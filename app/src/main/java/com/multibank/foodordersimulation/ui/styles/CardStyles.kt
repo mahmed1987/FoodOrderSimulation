@@ -32,6 +32,7 @@ fun AppCard(
       CardType.Primary -> AppCardDefaults.primaryCardColors()
       CardType.PrimaryContainer -> AppCardDefaults.primaryContainerCardColors()
       CardType.Secondary -> AppCardDefaults.secondaryCardColors()
+      CardType.Tertiary -> AppCardDefaults.tertiaryCardColors()
     },
     elevation = AppCardDefaults.cardElevation(if (isElevated) cardDefaultElevation else 0.dp),
     shape = RoundedCornerShape(cornerRadius)
@@ -47,6 +48,7 @@ enum class CardType {
   Primary,
   PrimaryContainer,
   Secondary,
+  Tertiary,
 }
 
 object AppCardDefaults {
@@ -74,6 +76,16 @@ object AppCardDefaults {
   fun secondaryCardColors(
     containerColor: Color = MaterialTheme.colorScheme.secondary,
     contentColor: Color = MaterialTheme.colorScheme.onSecondary,
+  ) = CardDefaults.cardColors(
+    containerColor = containerColor,
+    contentColor = contentColor,
+  )
+
+
+  @Composable
+  fun tertiaryCardColors(
+    containerColor: Color = MaterialTheme.colorScheme.tertiary,
+    contentColor: Color = MaterialTheme.colorScheme.onTertiary,
   ) = CardDefaults.cardColors(
     containerColor = containerColor,
     contentColor = contentColor,

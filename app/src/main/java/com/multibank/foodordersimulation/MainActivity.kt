@@ -13,8 +13,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.core.view.WindowCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.ViewModel
-import androidx.navigation.NavBackStackEntry
-import androidx.navigation.NavController
+import androidx.navigation.*
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -40,19 +39,27 @@ class MainActivity : ComponentActivity() {
 
         Scaffold(topBar = {
           TopAppBar(title = {
-            MediumHeading(text = currentDestination?.destination?.route ?: "")
+            MediumHeading(text = currentDestination?.destination?.screenTitle() ?: "")
           })
         }) { padding ->
-          NavHost(navController = navController, startDestination = "Orders") {
-            composable("Orders") {
+          NavHost(navController = navController, startDestination = "orders") {
+            composable("orders") {
               val viewModel = hiltViewModel<OrdersViewModel>()
               OrderScreen(padding, viewModel) {
-                navController.navigate("OrderDetails")
+                navController.navigate("orderDetails/${it.id}")
               }
             }
-            composable("OrderDetails") {
-              val viewModel = navController.findViewModelByRoute<OrdersViewModel>(it, "Orders")
-              OrderDetailsScreen(viewModel)
+            composable(
+              "orderDetails/{orderId}",
+              arguments = listOf(navArgument("orderId") { type = NavType.StringType })
+            ) { backStackEntry ->
+              val viewModel =
+                navController.findViewModelByRoute<OrdersViewModel>(backStackEntry, "orders")
+              val orderId = backStackEntry.arguments?.getString("orderId")
+              orderId?.let {
+                val order = viewModel.orderById(orderId)
+                OrderDetailsScreen(padding, order.second)
+              }
             }
             /*...*/
           }
@@ -65,6 +72,14 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun Greeting(name: String) {
   Text(text = "Hello $name!")
+}
+
+fun NavDestination.screenTitle() = when (route) {
+  "orders" -> "Orders"
+  "orderDetails/{orderId}" -> "Order Details"
+  else -> {
+    ""
+  }
 }
 
 @Preview(showBackground = true)

@@ -11,6 +11,7 @@ import com.multibank.foodordersimulation.ui.theme.FoodOrderSimulationTheme
 
 enum class ButtonType {
   Primary,
+  PrimaryContainer,
   Secondary,
   Tertiary,
 }
@@ -33,6 +34,21 @@ fun AppButton(
     ButtonType.Primary -> PrimaryAppButton(text = text, onClick = onClick)
     ButtonType.Secondary -> SecondaryAppButton(text = text, onClick = onClick)
     ButtonType.Tertiary -> TertiaryAppButton(text = text, onClick = onClick)
+    ButtonType.PrimaryContainer -> PrimaryContainerAppButton(text = text, onClick = onClick)
+  }
+}
+
+@Composable
+private fun PrimaryContainerAppButton(
+  onClick: () -> Unit = {},
+  text: String,
+) {
+  ElevatedButton(
+    onClick = onClick,
+    colors = AppButtonDefaults.primaryContainerColors(),
+    elevation = AppButtonDefaults.elevatedButtonElevation()
+  ) {
+    MediumTitle(text = text)
   }
 }
 
@@ -77,6 +93,15 @@ object AppButtonDefaults {
   fun primaryColors(
     containerColor: Color = MaterialTheme.colorScheme.primary,
     contentColor: Color = MaterialTheme.colorScheme.onPrimary,
+  ) = ButtonDefaults.buttonColors(
+    containerColor = containerColor,
+    contentColor = contentColor,
+  )
+
+  @Composable
+  fun primaryContainerColors(
+    containerColor: Color = MaterialTheme.colorScheme.primaryContainer,
+    contentColor: Color = MaterialTheme.colorScheme.onPrimaryContainer,
   ) = ButtonDefaults.buttonColors(
     containerColor = containerColor,
     contentColor = contentColor,

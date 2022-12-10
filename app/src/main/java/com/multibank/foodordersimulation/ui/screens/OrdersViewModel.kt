@@ -21,27 +21,12 @@ class OrdersViewModel @Inject constructor() : ViewModel() {
   private val event: MutableStateFlow<OrderIntention> =
     MutableStateFlow(OrderIntention.InitializeScreen)
 
-  private val timer: CountDownTimer = object : CountDownTimer(15000, 15000) {
+  private val deliveredOrderTimers: MutableList<CountDownTimer> = mutableListOf()
 
-    override fun onTick(millisUntilFinished: Long) {
-    }
-
-    override fun onFinish() {
-      removeDeliveredOrders()
-      start()
-    }
-  }
-
-  init {
-    timer.start()
-  }
 
   override fun onCleared() {
     super.onCleared()
-    timer.cancel()
-  }
-
-  private fun initializeCountDownTimer() {
+    deliveredOrderTimers.forEach { it.cancel() }
   }
 
   fun advanceOrderStatus(order: Order) {
@@ -52,8 +37,10 @@ class OrdersViewModel @Inject constructor() : ViewModel() {
     executeIntention(OrderIntention.AddOrderToQueue(Order.create()))
   }
 
-  private fun removeDeliveredOrders() {
-    executeIntention(OrderIntention.RemovedDeliveredOrders)
+  fun orderById(id: String) = ordersQueue.value.findOrderById(id)
+
+  private fun removeDeliveredOrder(order: Order) {
+    executeIntention(OrderIntention.RemovedDeliveredOrder(order))
   }
 
   val orderState: StateFlow<OrderUiState> =
@@ -73,15 +60,33 @@ class OrdersViewModel @Inject constructor() : ViewModel() {
       is OrderIntention.AddOrderToQueue -> currentOrders.add(event.order)
       is OrderIntention.AdvanceStatus -> {
         val order = currentOrders.findOrderById(event.order.id)
-        currentOrders[order.first] = order.second.copy(status = advanceStatus(order.second.status))
+        val newStatus = advanceStatus(order.second.status)
+        currentOrders[order.first] = order.second.copy(status = newStatus)
+        if (newStatus == Order.Status.Delivered) {
+          startTimerForOrder(currentOrders[order.first])
+        }
       }
       OrderIntention.InitializeScreen -> emptyList<Order>()
-      is OrderIntention.RemovedDeliveredOrders -> {
-        val orders = currentOrders.findDeliveredOrders()
-        currentOrders.removeAll(orders)
+      is OrderIntention.RemovedDeliveredOrder -> {
+        val order = currentOrders.findOrderById(event.order.id)
+        currentOrders.removeAt(order.first)
       }
     }
     return ArrayList(currentOrders)
+  }
+
+  private fun startTimerForOrder(order: Order) {
+    object : CountDownTimer(15000, 15000) {
+
+      override fun onTick(millisUntilFinished: Long) {
+        Log.d("OrderViewModel", "${order.id} marked for delivery")
+      }
+
+      override fun onFinish() {
+        Log.d("OrderViewModel", "${order.id} delivered")
+        removeDeliveredOrder(order)
+      }
+    }.start()
   }
 
 
@@ -111,7 +116,7 @@ sealed interface OrderIntention {
   object InitializeScreen : OrderIntention
   data class AddOrderToQueue(val order: Order) : OrderIntention
   data class AdvanceStatus(val order: Order) : OrderIntention
-  object RemovedDeliveredOrders : OrderIntention
+  data class RemovedDeliveredOrder(val order: Order) : OrderIntention
 }
 
 @Immutable

@@ -10,6 +10,7 @@ import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
+import com.multibank.foodordersimulation.R
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -18,6 +19,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.multibank.foodordersimulation.data.models.Order
 import com.multibank.foodordersimulation.ui.styles.*
 import com.multibank.foodordersimulation.ui.theme.FoodOrderSimulationTheme
+import com.multibank.foodordersimulation.ui.theme.mediumPadding
 import com.multibank.foodordersimulation.ui.theme.smallPadding
 
 @OptIn(ExperimentalLifecycleComposeApi::class)
@@ -25,7 +27,7 @@ import com.multibank.foodordersimulation.ui.theme.smallPadding
 fun OrderScreen(
   paddingValues: PaddingValues,
   viewModel: OrdersViewModel,
-  navigateToOrderDetails: (Int) -> Unit
+  navigateToOrderDetails: (Order) -> Unit
 ) {
   val orderUiState: OrderUiState by viewModel.orderState.collectAsStateWithLifecycle()
   Window {
@@ -43,9 +45,9 @@ fun OrderScreen(
 fun OrderScreenContent(
   paddingValues: PaddingValues,
   orderUiState: OrderUiState,
-  onOrderClicked: (Order) -> Unit,
+  onOrderStatusClicked: (Order) -> Unit,
   addOrder: () -> Unit,
-  navigateToOrderDetails: (Int) -> Unit
+  navigateToOrderDetails: (Order) -> Unit
 ) {
   Crossfade(targetState = orderUiState) { uiState ->
     when (uiState) {
@@ -59,7 +61,11 @@ fun OrderScreenContent(
             addOrder()
           }
           LargeSpacer()
-          OrderItems(orders = uiState.orders, onOrderClicked = onOrderClicked)
+          OrderItems(
+            orders = uiState.orders,
+            onOrderStatusClicked = onOrderStatusClicked,
+            onOrderClicked = navigateToOrderDetails
+          )
         }
       }
     }
@@ -68,34 +74,57 @@ fun OrderScreenContent(
 }
 
 @Composable
-fun OrderItems(orders: List<Order>, onOrderClicked: (Order) -> Unit) {
+fun OrderItems(
+  orders: List<Order>,
+  onOrderStatusClicked: (Order) -> Unit,
+  onOrderClicked: (Order) -> Unit
+) {
   LazyColumn {
     items(orders) {
-      OrderItem(order = it) {
-        onOrderClicked(it)
-      }
+      OrderItem(
+        order = it,
+        onOrderStatusClicked = onOrderStatusClicked,
+        onOrderClicked = onOrderClicked
+      )
       SmallSpacer()
     }
   }
 }
 
 @Composable
-fun OrderItem(order: Order, onOrderClicked: (Order) -> Unit) {
+fun OrderItem(
+  order: Order,
+  onOrderStatusClicked: (Order) -> Unit,
+  onOrderClicked: (Order) -> Unit
+) {
   AppCard(
     type = CardType.Primary,
     modifier = Modifier
       .fillMaxWidth()
-      .clickable(order.status != Order.Status.Delivered) {
-        onOrderClicked(order)
-      }) {
-    Column() {
+
+  ) {
+    Column {
       Row(verticalAlignment = Alignment.CenterVertically) {
         MediumTitle(text = "Order Id: ")
         SmallSpacer()
         SmallTitle(text = order.id, maxLines = 1)
       }
-      AppCard(type = CardType.Secondary) {
-        LargeBody(text = stringResource(id = order.status.text))
+      MediumSpacer()
+      Row(horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
+        AppCard(
+          type = CardType.Secondary,
+          contentPadding = mediumPadding,
+          modifier = Modifier.clickable(order.status != Order.Status.Delivered) {
+            onOrderStatusClicked(order)
+          }) {
+          SmallTitle(text = stringResource(id = order.status.text))
+        }
+        AppButton(
+          text = stringResource(id = R.string.see_details),
+          type = ButtonType.PrimaryContainer
+        ) {
+          onOrderClicked(order)
+        }
       }
     }
   }
@@ -105,7 +134,7 @@ fun OrderItem(order: Order, onOrderClicked: (Order) -> Unit) {
 @Composable
 fun PreviewOrderItem() {
   FoodOrderSimulationTheme() {
-    OrderItem(order = Order.empty()) {
+    OrderItem(order = Order.empty(), {}) {
 
     }
   }

@@ -4,4 +4,6 @@
     <string name="order_status_preparation">Preparation</string>
     <string name="order_status_ready">Ready</string>
     <string name="order_status_delivered">Delivered</string>
+
+    <string name="see_details">See Details</string>
 </resources>
