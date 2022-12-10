@@ -2,6 +2,7 @@ package com.multibank.foodordersimulation.ui.screens
 
 import android.content.res.Configuration.UI_MODE_NIGHT_YES
 import androidx.compose.animation.Crossfade
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -31,6 +32,7 @@ fun OrderScreen(
     OrderScreenContent(
       paddingValues,
       orderUiState,
+      viewModel::advanceOrderStatus,
       viewModel::addOrderToQueue,
       navigateToOrderDetails
     )
@@ -41,6 +43,7 @@ fun OrderScreen(
 fun OrderScreenContent(
   paddingValues: PaddingValues,
   orderUiState: OrderUiState,
+  onOrderClicked: (Order) -> Unit,
   addOrder: () -> Unit,
   navigateToOrderDetails: (Int) -> Unit
 ) {
@@ -56,9 +59,7 @@ fun OrderScreenContent(
             addOrder()
           }
           LargeSpacer()
-          OrderItems(
-            orders = uiState.orders
-          )
+          OrderItems(orders = uiState.orders, onOrderClicked = onOrderClicked)
         }
       }
     }
@@ -67,10 +68,11 @@ fun OrderScreenContent(
 }
 
 @Composable
-fun OrderItems(orders: List<Order>) {
+fun OrderItems(orders: List<Order>, onOrderClicked: (Order) -> Unit) {
   LazyColumn {
     items(orders) {
       OrderItem(order = it) {
+        onOrderClicked(it)
       }
       SmallSpacer()
     }
@@ -78,8 +80,14 @@ fun OrderItems(orders: List<Order>) {
 }
 
 @Composable
-fun OrderItem(order: Order, onOrderClicked: () -> Unit) {
-  AppCard(type = CardType.Primary, onClick = { /*TODO*/ }, modifier = Modifier.fillMaxWidth()) {
+fun OrderItem(order: Order, onOrderClicked: (Order) -> Unit) {
+  AppCard(
+    type = CardType.Primary,
+    modifier = Modifier
+      .fillMaxWidth()
+      .clickable(order.status != Order.Status.Delivered) {
+        onOrderClicked(order)
+      }) {
     Column() {
       Row(verticalAlignment = Alignment.CenterVertically) {
         MediumTitle(text = "Order Id: ")
@@ -107,6 +115,6 @@ fun PreviewOrderItem() {
 @Composable
 fun PreviewFoodOrderingScreen() {
   FoodOrderSimulationTheme {
-    OrderScreenContent(smallPadding, OrderUiState.Success(listOf(Order.empty())), {}) {}
+    OrderScreenContent(smallPadding, OrderUiState.Success(listOf(Order.empty())), {}, {}) {}
   }
 }

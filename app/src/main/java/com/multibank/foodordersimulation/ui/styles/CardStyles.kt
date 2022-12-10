@@ -24,12 +24,10 @@ fun AppCard(
   isElevated: Boolean = false,
   cornerRadius: Dp = mediumUnit,
   contentPadding: PaddingValues = smallPadding,
-  onClick: () -> Unit = {},
   content: @Composable () -> Unit,
 ) {
   Card(
     modifier = modifier,
-    onClick = onClick,
     colors = when (type) {
       CardType.Primary -> AppCardDefaults.primaryCardColors()
       CardType.PrimaryContainer -> AppCardDefaults.primaryContainerCardColors()
