@@ -143,7 +143,7 @@ fun PreviewPrimaryAppButton() {
 
 @Preview
 @Composable
-fun PreviewSecondaryRezoomButton() {
+fun PreviewSecondaryAppButton() {
   FoodOrderSimulationTheme() {
     SecondaryAppButton({}, "Secondary button")
   }
@@ -152,7 +152,7 @@ fun PreviewSecondaryRezoomButton() {
 
 @Preview
 @Composable
-fun PreviewTertiaryRezoomButton() {
+fun PreviewTertiaryAppButton() {
   FoodOrderSimulationTheme() {
     TertiaryAppButton({}, "Tertiary button")
   }
