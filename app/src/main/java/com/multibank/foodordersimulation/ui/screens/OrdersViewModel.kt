@@ -7,6 +7,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.multibank.foodordersimulation.data.models.Order
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import java.time.LocalDateTime
@@ -14,7 +15,8 @@ import java.util.UUID
 import javax.inject.Inject
 
 @HiltViewModel
-class OrdersViewModel @Inject constructor() : ViewModel() {
+class OrdersViewModel @Inject constructor(private val dispatcher: CoroutineDispatcher) :
+  ViewModel() {
 
   /* The backing queue of orders that drives the UI for orders - In reality this should be persisted in Room*/
   private val ordersQueue: MutableStateFlow<ArrayDeque<Order>> = MutableStateFlow(ArrayDeque())
@@ -107,7 +109,9 @@ class OrdersViewModel @Inject constructor() : ViewModel() {
    * Mutates the State of the UI , by executing this intention against the state
    * */
   private fun executeIntention(intention: OrderIntention) {
-    event.value = intention
+    viewModelScope.launch(dispatcher) {
+      event.emit(intention)
+    }
   }
 
   /**
