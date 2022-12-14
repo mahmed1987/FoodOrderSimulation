@@ -15,7 +15,7 @@ import java.util.UUID
 import javax.inject.Inject
 
 @HiltViewModel
-class OrdersViewModel @Inject constructor(private val dispatcher: CoroutineDispatcher) :
+class OrdersViewModel @Inject constructor() :
   ViewModel() {
 
   /* The backing queue of orders that drives the UI for orders - In reality this should be persisted in Room*/
@@ -109,7 +109,7 @@ class OrdersViewModel @Inject constructor(private val dispatcher: CoroutineDispa
    * Mutates the State of the UI , by executing this intention against the state
    * */
   private fun executeIntention(intention: OrderIntention) {
-    viewModelScope.launch(dispatcher) {
+    viewModelScope.launch() {
       event.emit(intention)
     }
   }

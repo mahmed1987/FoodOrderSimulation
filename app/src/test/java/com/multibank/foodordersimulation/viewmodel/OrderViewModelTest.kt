@@ -19,13 +19,14 @@ import org.mockito.junit.MockitoJUnitRunner
 class OrderViewModelTest {
 
   private lateinit var viewModel: OrdersViewModel
+  @OptIn(ExperimentalCoroutinesApi::class)
+  @get:Rule
+  val coroutineRule = MainCoroutineRule()
 
   @OptIn(ExperimentalCoroutinesApi::class)
   @Before
   fun setUp() {
-    val testDispatcher = UnconfinedTestDispatcher()
-    Dispatchers.setMain(testDispatcher)
-    viewModel = OrdersViewModel(testDispatcher)
+    viewModel = OrdersViewModel()
   }
 
   @OptIn(ExperimentalCoroutinesApi::class)
